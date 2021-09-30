@@ -1,10 +1,16 @@
-const assert = require('assert');
+const chai = require('chai');  
+const expect = chai.expect;
 
-describe('Simple Math Test', () => {  
- it('should return 2', () => {  
-        assert.equal(1 + 1, 2);  
-    });  
- it('should return 9', () => {  
-        assert.equal(3 * 3, 9);  
-    });  
+const tagConverter = require("../main")
+
+describe('Convert Tags line from Notion to Obsidian', () => {
+    it('should return Content: #Blockchain', () => {
+        expect(tagConverter.convertTagLine("Tags: Blockchain")).to.be.equal("Content: #Blockchain");
+    });
+    it('should return Content: #Cat/Background', () => {
+        expect(tagConverter.convertTagLine("Tags: Cat: Background")).to.be.equal("Content: #Cat/Background");
+    });
+    it('should return Content: #Blockchain, #Cat/Background, #Index', () => {
+        expect(tagConverter.convertTagLine("Tags: Blockchain, Cat: Background, Index")).to.be.equal("Content: #Blockchain, #Cat/Background, #Index");
+    });
 });
