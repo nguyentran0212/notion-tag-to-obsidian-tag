@@ -1,10 +1,8 @@
 Content: #Blockchain, #Cat/Background
-
 # Formal Definition of EVM
 
 Created: March 25, 2021 8:01 AM
 Last Edited: May 25, 2021 9:44 PM
-
 UID: 202103250801
 
 Formally, the execution of EVM can be defined recursively with a function $X$, in conjunction with an iterator function $O$, an exceptional halting state function $Z$ and output of the the instruction $H$.

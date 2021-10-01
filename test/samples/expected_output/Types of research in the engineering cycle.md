@@ -1,10 +1,8 @@
-Content: Cat/Research Method
-
+Content: #Cat/Research Method
 # Types of research in the engineering cycle
 
 Created: February 6, 2021 2:48 PM
 Last Edited: February 6, 2021 4:36 PM
-
 UID: 202102061448
 
 1. Evaluation research [[Criteria of Evaluation Research ]] 

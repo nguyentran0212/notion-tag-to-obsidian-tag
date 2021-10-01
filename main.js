@@ -1,3 +1,5 @@
+const fsPromises = require('fs/promises')
+
 module.exports = {
     // Convert tagline Tags: Blockchain, Cat: Background, Index into Content: #Blockchain, #Cat/Background, #Index
     convertTagLine(tagLine){
@@ -28,9 +30,38 @@ module.exports = {
         }
         // Reconstruct and return the tag line
         return `Content: ${tags.join(", ")}`
-    }
+    },
 
     // Convert individual files
-
+    async convertIndividualFile(inputFilePath, outputFilePath, tagLine = "Tags: "){
+        // Read the whole input file into memory
+        let inputFile = await fsPromises.readFile(inputFilePath, {encoding : "utf8"});
+        // Split the input file into lines and search for the tagline
+        let inputDataArray = (inputFile).split('\n');
+        let tagLineIndex = -1
+        for (let i = 0; i < inputDataArray.length; i++){
+            if(inputDataArray[i].indexOf(tagLine) == 0){
+                tagLineIndex = i;
+                break;
+            }
+        }
+        if(tagLineIndex == -1) {
+            // Output the file as is if tagline cannot be found
+            await fsPromises.writeFile(outputFilePath, inputFile);
+            return
+        } else {
+            // Convert the tagline
+            let convertedTagLine = this.convertTagLine(inputDataArray[tagLineIndex]);
+            // Remove the previous tagline
+            inputDataArray.splice(tagLineIndex,1);
+            inputDataArray = [convertedTagLine].concat(inputDataArray);
+            // Write the output file
+            let outputFile = inputDataArray.join('\n');
+            await fsPromises.writeFile(outputFilePath, outputFile);
+            return
+        }
+    }
     // Convert entire folder (non recursive)
 }
+
+
