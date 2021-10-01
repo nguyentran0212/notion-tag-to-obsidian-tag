@@ -1,4 +1,6 @@
 const fsPromises = require('fs/promises')
+const fs = require('fs');
+const path = require('path')
 
 module.exports = {
     // Convert tagline Tags: Blockchain, Cat: Background, Index into Content: #Blockchain, #Cat/Background, #Index
@@ -60,8 +62,21 @@ module.exports = {
             await fsPromises.writeFile(outputFilePath, outputFile);
             return
         }
-    }
+    },
     // Convert entire folder (non recursive)
+    async convertFolder(inputDirPath, outputDirPath, tagLine = "Tags: "){
+        // Get an array of file names in the input directory
+        let inputDir = await fsPromises.readdir(inputDirPath);
+        // Create the output directory
+        if(!fs.existsSync(outputDirPath)) await fsPromises.mkdir(outputDirPath);
+        
+        // Convert and write files from the input directory to the output directory
+        inputDir.forEach(async inputFileName => {
+            let outputFilePath = path.join(outputDirPath, inputFileName);
+            let inputFilePath = path.join(inputDirPath, inputFileName);
+            await this.convertIndividualFile(inputFilePath, outputFilePath, tagLine);
+        });
+    }
 }
 
 

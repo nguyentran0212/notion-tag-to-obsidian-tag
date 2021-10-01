@@ -9,9 +9,24 @@ const fs = require("fs");
 compareFile = async (filePathA, filePathB) => {
     let fileA = await fsPromises.readFile(filePathA, {encoding : "utf8"});
     let fileB = await fsPromises.readFile(filePathB, {encoding : "utf8"});
-    // console.log(fileA)
-    // console.log(fileB)
     return fileA.trim() == fileB.trim();
+}
+
+compareDirShallow = async (dirPathA, dirPathB) => {
+    // console.log(dirPathA, dirPathB)
+    let dirA = await fsPromises.readdir(dirPathA);
+    let dirB = await fsPromises.readdir(dirPathB);
+    // console.log(dirA)
+    // console.log(dirB)
+    // Two directories are identical shallowly if they have same number of items, in the same order
+    return dirA.length === dirB.length && dirA.every((v, i) => v === dirB[i]);
+}
+
+compareDirDeep = async (dirPathA, dirPathB) => {
+    let dirA = await fsPromises.readdir(dirPathA);
+    let dirB = await fsPromises.readdir(dirPathB);
+    // Two directories are identical shallowly if they have same number of items, in the same order
+    return dirA.length === dirB.length && dirA.every(async (v, i) => await compareFile(path.join(dirPathA,v), path.join(dirPathB, dirB[i])));
 }
 
 describe('Convert Tags line from Notion to Obsidian', () => {
@@ -27,6 +42,14 @@ describe('Convert Tags line from Notion to Obsidian', () => {
 });
 
 describe('Convert Notion article to Obsidian article with tags', () => {
+    beforeEach('Create output folder before each test', async () => {
+        let outputDirPath = path.join(__dirname, 'samples', 'output')
+        if(!fs.existsSync(outputDirPath)) await fsPromises.mkdir(outputDirPath);
+    });
+    // afterEach('Delete output folder after each test', async () => {
+    //     let outputDirPath = path.join(__dirname, 'samples', 'output')
+    //     if(fs.existsSync(outputDirPath)) await fsPromises.rm(outputDirPath, {recursive: true, force: true});
+    // });
     it('should return the right article for Formal Definition of EVM', async () => {
         let inputFile = path.join(__dirname, 'samples', 'input', 'Formal Definition of EVM.md')
         let outputFile = path.join(__dirname, 'samples', 'output', 'Formal Definition of EVM.md')
@@ -57,10 +80,22 @@ describe('Convert Notion article to Obsidian article with tags', () => {
 })
 
 describe('Convert entire folder of Notion articles', () => {
-    it('should return a new folder with identical file names', () => {
-
+    // afterEach('Delete output folder after each test', async () => {
+    //     let outputDirPath = path.join(__dirname, 'samples', 'output')
+    //     if(fs.existsSync(outputDirPath)) await fsPromises.rm(outputDirPath, {recursive: true, force: true});
+    // })
+    it('should return a new folder with identical file names', async () => {
+        let inputDir = path.join(__dirname, 'samples', 'input');
+        let outputDir = path.join(__dirname, 'samples', 'output');
+        let expectedOutputDir = path.join(__dirname, 'samples', 'expected_output');
+        await tagConverter.convertFolder(inputDir, outputDir);
+        expect(await compareDirShallow(outputDir, expectedOutputDir)).to.be.true;
     });
-    it('should ensure that every article has been converted properly', () => {
-        
+    it('should ensure that every article has been converted properly', async () => {
+        let inputDir = path.join(__dirname, 'samples', 'input');
+        let outputDir = path.join(__dirname, 'samples', 'output');
+        let expectedOutputDir = path.join(__dirname, 'samples', 'expected_output');
+        await tagConverter.convertFolder(inputDir, outputDir);
+        expect(await compareDirDeep(outputDir, expectedOutputDir)).to.be.true;
     })
 })
