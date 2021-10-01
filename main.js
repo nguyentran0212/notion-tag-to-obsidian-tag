@@ -1,6 +1,7 @@
 const fsPromises = require('fs/promises')
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
+const { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } = require('constants');
 
 module.exports = {
     // Convert tagline Tags: Blockchain, Cat: Background, Index into Content: #Blockchain, #Cat/Background, #Index
@@ -21,11 +22,14 @@ module.exports = {
                     // Convert complex tag Cat: Background into #Cat/Background
                     let subtags = tag.split(":");
                     subtags = subtags.map(subtag => {
-                        return subtag.trim();
+                        subtag = subtag.trim();
+                        subtag = subtag.replace(/ /g, "-")
+                        return subtag;
                     })
                     return `#${subtags.join("/")}`;
                 } else {
                     // Convert simple Tag into #Tag
+                    tag = tag.replace(/ /g, "-");
                     return `#${tag}`;
                 }
             })
@@ -36,6 +40,8 @@ module.exports = {
 
     // Convert individual files
     async convertIndividualFile(inputFilePath, outputFilePath, tagLine = "Tags: "){
+        // Skip given path if it is not a file. 
+        if(!fs.lstatSync(inputFilePath).isFile()) return;
         // Read the whole input file into memory
         let inputFile = await fsPromises.readFile(inputFilePath, {encoding : "utf8"});
         // Split the input file into lines and search for the tagline
@@ -65,6 +71,7 @@ module.exports = {
     },
     // Convert entire folder (non recursive)
     async convertFolder(inputDirPath, outputDirPath, tagLine = "Tags: "){
+        console.log(inputDirPath, outputDirPath);
         // Get an array of file names in the input directory
         let inputDir = await fsPromises.readdir(inputDirPath);
         // Create the output directory
@@ -79,4 +86,10 @@ module.exports = {
     }
 }
 
+run = async () => {
+    let inputDir = path.join(__dirname, "Ideas");
+    let outputDir = path.join(__dirname, "New_Ideas");
+    await module.exports.convertFolder(inputDir, outputDir)
+}
 
+run();
